@@ -1,0 +1,1446 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude AI 產品介紹 — Cowork & Chat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Azeret+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ============ THEME: Warm Signal ============ */
+  :root {
+    --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', 'SF Mono', monospace;
+    --bg: #faf6f0;
+    --surface: #ffffff;
+    --surface2: #f5ece0;
+    --surface-elevated: #fffdf5;
+    --border: rgba(60, 40, 20, 0.08);
+    --border-bright: rgba(60, 40, 20, 0.18);
+    --text: #2c2a25;
+    --text-dim: #7c756a;
+    --accent: #c2410c;
+    --accent2: #0a5c3b;
+    --accent-dim: rgba(194, 65, 12, 0.08);
+    --code-bg: #2c2520;
+    --code-text: #f5ece0;
+    --green: #0a5c3b;
+    --green-dim: rgba(10, 92, 59, 0.08);
+    --blue: #1d4ed8;
+    --blue-dim: rgba(29, 78, 216, 0.08);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1916;
+      --surface: #262220;
+      --surface2: #302b28;
+      --surface-elevated: #3a3430;
+      --border: rgba(200, 180, 160, 0.08);
+      --border-bright: rgba(200, 180, 160, 0.18);
+      --text: #f0e8dc;
+      --text-dim: #a09888;
+      --accent: #e85d2a;
+      --accent2: #34d399;
+      --accent-dim: rgba(232, 93, 42, 0.1);
+      --code-bg: #141210;
+      --code-text: #f0e8dc;
+      --green: #34d399;
+      --green-dim: rgba(52, 211, 153, 0.1);
+      --blue: #60a5fa;
+      --blue-dim: rgba(96, 165, 250, 0.1);
+    }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-body);
+    color: var(--text);
+    background: var(--bg);
+    overflow: hidden;
+  }
+
+  /* ============ DECK ENGINE ============ */
+  .deck {
+    height: 100dvh;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .slide {
+    height: 100dvh;
+    scroll-snap-align: start;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(36px, 6vh, 72px) clamp(40px, 8vw, 120px);
+    isolation: isolate;
+    opacity: 0;
+    transform: translateY(40px) scale(0.98);
+    transition:
+      opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .slide.visible { opacity: 1; transform: none; }
+
+  .slide .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .slide.visible .reveal { opacity: 1; transform: none; }
+  .slide.visible .reveal:nth-child(1) { transition-delay: 0.1s; }
+  .slide.visible .reveal:nth-child(2) { transition-delay: 0.2s; }
+  .slide.visible .reveal:nth-child(3) { transition-delay: 0.3s; }
+  .slide.visible .reveal:nth-child(4) { transition-delay: 0.4s; }
+  .slide.visible .reveal:nth-child(5) { transition-delay: 0.5s; }
+  .slide.visible .reveal:nth-child(6) { transition-delay: 0.6s; }
+  .slide.visible .reveal:nth-child(7) { transition-delay: 0.7s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .slide, .slide .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+  }
+
+  /* ============ NAV CHROME ============ */
+  .deck-progress {
+    position: fixed; top: 0; left: 0; height: 3px;
+    background: var(--accent); z-index: 100;
+    transition: width 0.3s ease; pointer-events: none;
+  }
+
+  .deck-dots {
+    position: fixed; right: clamp(12px, 2vw, 20px); top: 50%;
+    transform: translateY(-50%); display: flex; flex-direction: column;
+    gap: 7px; z-index: 100; padding: 8px;
+    background: color-mix(in srgb, var(--bg) 70%, transparent 30%);
+    border-radius: 20px; backdrop-filter: blur(4px);
+  }
+
+  .deck-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--text-dim); opacity: 0.3; border: none; padding: 0;
+    cursor: pointer; transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .deck-dot:hover { opacity: 0.6; }
+  .deck-dot.active { opacity: 1; transform: scale(1.5); background: var(--accent); }
+
+  .deck-counter {
+    position: fixed; bottom: clamp(12px, 2vh, 20px); right: clamp(12px, 2vw, 24px);
+    font-family: var(--font-mono); font-size: 11px; color: var(--text-dim);
+    z-index: 100;
+  }
+
+  .deck-hints {
+    position: fixed; bottom: clamp(12px, 2vh, 20px); left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-mono); font-size: 11px; color: var(--text-dim);
+    z-index: 100; opacity: 1; transition: opacity 1s ease;
+    background: color-mix(in srgb, var(--bg) 80%, transparent 20%);
+    padding: 4px 12px; border-radius: 20px;
+    backdrop-filter: blur(4px);
+  }
+  .deck-hints.faded { opacity: 0; pointer-events: none; }
+
+  /* ============ PART LABEL ============ */
+  .slide__part {
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 1.1vw, 12px);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  .slide__label {
+    font-family: var(--font-mono);
+    font-size: clamp(10px, 1.2vw, 13px);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+
+  .slide__display {
+    font-size: clamp(44px, 9vw, 108px);
+    font-weight: 800;
+    letter-spacing: -3px;
+    line-height: 0.95;
+    text-wrap: balance;
+  }
+
+  .slide__heading {
+    font-size: clamp(26px, 4.5vw, 46px);
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+
+  .slide__body {
+    font-size: clamp(15px, 2vw, 22px);
+    line-height: 1.65;
+  }
+
+  .slide__subtitle {
+    font-family: var(--font-mono);
+    font-size: clamp(13px, 1.6vw, 18px);
+    color: var(--text-dim);
+  }
+
+  /* ============ SECTION DIVIDER ============ */
+  .slide--divider .slide__number {
+    font-size: clamp(80px, 18vw, 200px);
+    font-weight: 800;
+    color: var(--accent);
+    opacity: 0.12;
+    line-height: 1;
+    letter-spacing: -6px;
+    position: absolute;
+    right: clamp(40px, 8vw, 120px);
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  /* ============ TITLE SLIDE ============ */
+  .slide--title {
+    background-image: radial-gradient(ellipse at 80% 20%, rgba(194, 65, 12, 0.12) 0%, transparent 50%),
+                      radial-gradient(ellipse at 20% 80%, rgba(10, 92, 59, 0.08) 0%, transparent 50%);
+  }
+
+  .slide--title .slide__display {
+    color: var(--text);
+  }
+
+  .slide--title .accent-bar {
+    width: 60px;
+    height: 4px;
+    background: var(--accent);
+    border-radius: 2px;
+    margin-bottom: 20px;
+  }
+
+  /* ============ CONTENT BULLETS ============ */
+  .slide__bullets {
+    list-style: none;
+    margin-top: clamp(16px, 2.5vh, 28px);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(8px, 1.2vh, 14px);
+  }
+
+  .slide__bullets li {
+    font-size: clamp(14px, 1.9vw, 21px);
+    line-height: 1.5;
+    padding-left: 20px;
+    position: relative;
+    color: var(--text);
+  }
+
+  .slide__bullets li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.6em;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .slide__bullets li strong {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* ============ SPLIT LAYOUT ============ */
+  .slide__panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(20px, 3vw, 40px);
+    margin-top: clamp(16px, 2.5vh, 28px);
+  }
+
+  .slide__panel {
+    background: var(--surface);
+    border: 1px solid var(--border-bright);
+    border-radius: 12px;
+    padding: clamp(16px, 2.5vw, 28px);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .slide__panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+  }
+
+  .slide__panel--chat::before { background: var(--accent); }
+  .slide__panel--cowork::before { background: var(--green); }
+
+  .slide__panel-title {
+    font-size: clamp(15px, 2vw, 20px);
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .slide__panel-title .dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+  .dot--chat { background: var(--accent); }
+  .dot--cowork { background: var(--green); }
+
+  .panel-def {
+    font-size: clamp(12px, 1.5vw, 15px);
+    color: var(--text-dim);
+    line-height: 1.5;
+    margin-bottom: 12px;
+    font-style: italic;
+  }
+
+  .panel-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .tag {
+    font-family: var(--font-mono);
+    font-size: clamp(10px, 1.1vw, 12px);
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border-bright);
+    background: var(--surface2);
+    color: var(--text-dim);
+  }
+
+  /* ============ TABLE ============ */
+  .slide__table-wrap {
+    overflow-x: auto;
+    margin-top: clamp(14px, 2vh, 24px);
+    border-radius: 10px;
+    border: 1px solid var(--border-bright);
+  }
+
+  .slide__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: clamp(12px, 1.5vw, 16px);
+  }
+
+  .slide__table th {
+    background: var(--surface2);
+    padding: clamp(8px, 1.2vh, 14px) clamp(10px, 1.5vw, 18px);
+    text-align: left;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    font-size: clamp(10px, 1.2vw, 13px);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border-bright);
+  }
+
+  .slide__table td {
+    padding: clamp(7px, 1vh, 12px) clamp(10px, 1.5vw, 18px);
+    border-bottom: 1px solid var(--border);
+    line-height: 1.4;
+    vertical-align: middle;
+  }
+
+  .slide__table tr:last-child td { border-bottom: none; }
+  .slide__table tr:hover td { background: var(--accent-dim); }
+
+  .slide__table td:first-child {
+    font-weight: 600;
+    color: var(--text-dim);
+    white-space: nowrap;
+    font-family: var(--font-mono);
+    font-size: clamp(10px, 1.2vw, 13px);
+  }
+
+  .badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: clamp(10px, 1.1vw, 12px);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+
+  .badge--chat { background: var(--accent-dim); color: var(--accent); }
+  .badge--cowork { background: var(--green-dim); color: var(--green); }
+
+  /* ============ MODEL CARDS ============ */
+  .model-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(12px, 2vw, 24px);
+    margin-top: clamp(14px, 2vh, 24px);
+  }
+
+  .model-card {
+    background: var(--surface);
+    border: 1px solid var(--border-bright);
+    border-radius: 12px;
+    padding: clamp(14px, 2vw, 22px);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .model-card--opus {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--surface) 80%, var(--accent-dim) 20%);
+  }
+
+  .model-card__name {
+    font-size: clamp(15px, 2vw, 20px);
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+
+  .model-card__pos {
+    font-family: var(--font-mono);
+    font-size: clamp(10px, 1.1vw, 12px);
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+
+  .model-stars {
+    display: flex;
+    gap: 3px;
+    margin-bottom: 10px;
+  }
+
+  .star {
+    width: clamp(8px, 1.1vw, 12px);
+    height: clamp(8px, 1.1vw, 12px);
+    border-radius: 50%;
+  }
+
+  .star--filled { background: var(--accent); }
+  .star--empty { background: var(--border-bright); }
+
+  .speed-bar {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+
+  .speed-bar__fill {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--green);
+  }
+
+  .model-card__desc {
+    font-size: clamp(12px, 1.4vw, 15px);
+    line-height: 1.5;
+    color: var(--text-dim);
+  }
+
+  /* ============ SKILL STEPS ============ */
+  .skill-steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: clamp(10px, 1.5vw, 20px);
+    margin-top: clamp(14px, 2vh, 22px);
+  }
+
+  .skill-step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: clamp(12px, 1.8vw, 20px);
+    position: relative;
+  }
+
+  .skill-step__num {
+    font-family: var(--font-mono);
+    font-size: clamp(20px, 3vw, 36px);
+    font-weight: 800;
+    color: var(--accent);
+    opacity: 0.2;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .skill-step__title {
+    font-size: clamp(12px, 1.4vw, 15px);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .skill-step__desc {
+    font-size: clamp(11px, 1.2vw, 13px);
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  .skill-examples {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(8px, 1.2vw, 14px);
+    margin-top: clamp(10px, 1.5vh, 18px);
+  }
+
+  .skill-ex {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: clamp(10px, 1.4vw, 16px);
+    font-size: clamp(12px, 1.4vw, 15px);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .skill-ex__icon {
+    font-size: clamp(16px, 1.8vw, 20px);
+    flex-shrink: 0;
+  }
+
+  /* ============ SCENARIO CARDS ============ */
+  .scenario-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(16px, 2.5vw, 32px);
+    margin-top: clamp(14px, 2vh, 22px);
+  }
+
+  .scenario-card {
+    background: var(--surface);
+    border: 1px solid var(--border-bright);
+    border-radius: 12px;
+    padding: clamp(16px, 2.2vw, 26px);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .scenario-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .scenario-card--chat::before { background: var(--accent); }
+  .scenario-card--cowork::before { background: var(--green); }
+
+  .scenario-card__type {
+    font-family: var(--font-mono);
+    font-size: clamp(10px, 1.1vw, 12px);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .scenario-card--chat .scenario-card__type { color: var(--accent); }
+  .scenario-card--cowork .scenario-card__type { color: var(--green); }
+
+  .scenario-card__title {
+    font-size: clamp(14px, 1.8vw, 18px);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .scenario-steps {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .scenario-steps li {
+    font-size: clamp(12px, 1.4vw, 15px);
+    color: var(--text-dim);
+    padding-left: 16px;
+    position: relative;
+    line-height: 1.4;
+  }
+
+  .scenario-steps li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-size: 0.85em;
+  }
+
+  /* ============ FLOW DIAGRAM ============ */
+  .flow-steps {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin-top: clamp(16px, 2.5vh, 28px);
+  }
+
+  .flow-step {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border-bright);
+    border-radius: 10px;
+    padding: clamp(14px, 2vw, 22px);
+    position: relative;
+  }
+
+  .flow-step--optional {
+    border-style: dashed;
+    opacity: 0.8;
+  }
+
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    padding: 0 clamp(6px, 1vw, 12px);
+    color: var(--text-dim);
+    font-size: clamp(16px, 2vw, 22px);
+    flex-shrink: 0;
+  }
+
+  .flow-step__num {
+    font-family: var(--font-mono);
+    font-size: clamp(10px, 1.2vw, 13px);
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+
+  .flow-step__title {
+    font-size: clamp(13px, 1.6vw, 17px);
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .flow-step__desc {
+    font-size: clamp(11px, 1.3vw, 14px);
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  .flow-step__output {
+    font-family: var(--font-mono);
+    font-size: clamp(10px, 1.1vw, 12px);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 8px;
+    margin-top: 10px;
+    color: var(--accent);
+  }
+
+  .optional-badge {
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 1vw, 11px);
+    background: var(--surface2);
+    border: 1px dashed var(--border-bright);
+    border-radius: 4px;
+    padding: 2px 7px;
+    color: var(--text-dim);
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  /* ============ DISCOVERY CARDS ============ */
+  .discovery-block {
+    background: var(--surface);
+    border: 1px solid var(--border-bright);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+    padding: clamp(14px, 2vw, 24px);
+    margin-top: clamp(14px, 2vh, 22px);
+  }
+
+  .discovery-block__tag {
+    font-family: var(--font-mono);
+    font-size: clamp(10px, 1.1vw, 12px);
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+
+  .discovery-block__headline {
+    font-size: clamp(16px, 2.2vw, 24px);
+    font-weight: 700;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+
+  .discovery-block__body {
+    font-size: clamp(13px, 1.6vw, 17px);
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  .sub-finding {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(10px, 1.5vw, 20px);
+    margin-top: clamp(12px, 1.8vh, 20px);
+  }
+
+  .sub-finding-item {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: clamp(10px, 1.4vw, 18px);
+  }
+
+  .sub-finding-item__title {
+    font-weight: 700;
+    font-size: clamp(13px, 1.5vw, 16px);
+    margin-bottom: 6px;
+  }
+
+  .sub-finding-item__body {
+    font-size: clamp(12px, 1.3vw, 14px);
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  /* ============ COMPARE BEFORE/AFTER ============ */
+  .compare-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(12px, 2vw, 24px);
+    margin-top: clamp(12px, 2vh, 20px);
+  }
+
+  .compare-col {
+    background: var(--surface);
+    border: 1px solid var(--border-bright);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .compare-col__header {
+    padding: clamp(10px, 1.4vw, 16px) clamp(14px, 2vw, 20px);
+    font-family: var(--font-mono);
+    font-size: clamp(11px, 1.2vw, 13px);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--border-bright);
+  }
+
+  .compare-col--haiku .compare-col__header { background: var(--surface2); color: var(--text-dim); }
+  .compare-col--opus .compare-col__header { background: var(--accent-dim); color: var(--accent); }
+
+  .compare-col__body {
+    padding: clamp(10px, 1.4vw, 18px) clamp(14px, 2vw, 20px);
+  }
+
+  .compare-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: clamp(12px, 1.4vw, 15px);
+    line-height: 1.45;
+  }
+
+  .compare-item::before {
+    flex-shrink: 0;
+    margin-top: 2px;
+    font-size: 13px;
+  }
+
+  .compare-col--haiku .compare-item::before { content: '✗'; color: #dc2626; }
+  .compare-col--opus .compare-item::before { content: '✓'; color: var(--green); }
+
+  /* ============ TAKEAWAY ============ */
+  .takeaway-items {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(10px, 1.5vh, 18px);
+    margin-top: clamp(14px, 2vh, 22px);
+  }
+
+  .takeaway-item {
+    display: flex;
+    align-items: center;
+    gap: clamp(12px, 1.8vw, 20px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: clamp(12px, 1.8vw, 22px);
+  }
+
+  .takeaway-item__num {
+    font-family: var(--font-mono);
+    font-size: clamp(20px, 3vw, 36px);
+    font-weight: 800;
+    color: var(--accent);
+    opacity: 0.3;
+    line-height: 1;
+    flex-shrink: 0;
+    width: 40px;
+    text-align: center;
+  }
+
+  .takeaway-item__text {
+    font-size: clamp(14px, 1.8vw, 20px);
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  /* ============ DIVIDER SLIDE ============ */
+  .slide--divider {
+    background-image: radial-gradient(ellipse at 30% 50%, rgba(194, 65, 12, 0.1) 0%, transparent 60%);
+  }
+
+  /* ============ AGENT DIAGRAM ============ */
+  .agent-flow {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    margin-top: clamp(14px, 2vh, 22px);
+    max-width: 600px;
+  }
+
+  .agent-node {
+    background: var(--surface);
+    border: 1px solid var(--border-bright);
+    border-radius: 8px;
+    padding: clamp(10px, 1.4vw, 16px) clamp(14px, 2vw, 22px);
+    font-size: clamp(13px, 1.6vw, 17px);
+    font-weight: 600;
+    position: relative;
+    z-index: 1;
+  }
+
+  .agent-node--highlight {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--surface) 80%, var(--accent-dim) 20%);
+    color: var(--accent);
+  }
+
+  .agent-connector {
+    width: 2px;
+    height: clamp(16px, 2.2vh, 24px);
+    background: var(--border-bright);
+    margin-left: clamp(18px, 2.5vw, 28px);
+    position: relative;
+  }
+
+  .agent-connector::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid var(--border-bright);
+  }
+
+  .agent-loop {
+    font-family: var(--font-mono);
+    font-size: clamp(10px, 1.2vw, 13px);
+    color: var(--accent);
+    font-weight: 700;
+    margin-left: 10px;
+    padding: 2px 8px;
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    background: var(--accent-dim);
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-height: 700px) {
+    .slide { padding: clamp(20px, 4vh, 36px) clamp(32px, 6vw, 80px); }
+    .slide__display { font-size: clamp(32px, 8vw, 64px); }
+  }
+
+  @media (max-width: 768px) {
+    .slide__panels, .model-cards, .scenario-cards, .compare-cols,
+    .sub-finding { grid-template-columns: 1fr; }
+    .skill-steps { grid-template-columns: repeat(2, 1fr); }
+    .flow-steps { flex-direction: column; }
+    .flow-arrow { transform: rotate(90deg); align-self: center; }
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- ===== SLIDE 1: TITLE ===== -->
+  <section class="slide slide--title">
+    <div class="accent-bar reveal"></div>
+    <p class="slide__label reveal">Anthropic × 2025</p>
+    <h1 class="slide__display reveal">Claude AI<br>產品介紹</h1>
+    <p class="slide__subtitle reveal" style="margin-top:20px;">Cowork &amp; Chat 功能解析</p>
+    <p class="slide__body reveal" style="margin-top:32px; color:var(--text-dim); font-size:clamp(13px,1.5vw,16px);">由 Anthropic 出品 · Claude 4 系列模型</p>
+    <p class="slide__body reveal" style="margin-top:12px; color:var(--text-dim); font-size:clamp(12px,1.4vw,15px); font-family:var(--font-mono);">報告人：ACD_RD8 陳冠宇</p>
+  </section>
+
+  <!-- ===== PART 1 DIVIDER ===== -->
+  <section class="slide slide--divider">
+    <div class="slide__number">01</div>
+    <p class="slide__part reveal">Part 01</p>
+    <h2 class="slide__heading reveal" style="max-width:560px;">產品介紹</h2>
+    <p class="slide__subtitle reveal" style="margin-top:14px;">認識 Claude Chat 與 Claude Cowork</p>
+  </section>
+
+  <!-- ===== SLIDE 2: 產品概覽 ===== -->
+  <section class="slide">
+    <p class="slide__label reveal">Slide 02 · 產品概覽</p>
+    <h2 class="slide__heading reveal">兩大產品，各有所長</h2>
+    <div class="slide__panels reveal">
+      <div class="slide__panel slide__panel--chat">
+        <div class="slide__panel-title">
+          <span class="dot dot--chat"></span>
+          Claude Chat
+        </div>
+        <p class="panel-def">「與 AI 即時對話的智慧助理」</p>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;">
+          <li style="font-size:clamp(12px,1.4vw,15px);padding-left:14px;position:relative;color:var(--text-dim);" class="slide__bullets-item">
+            <span style="position:absolute;left:0;color:var(--accent);">·</span>
+            核心用途：寫作、分析、問答、程式碼
+          </li>
+          <li style="font-size:clamp(12px,1.4vw,15px);padding-left:14px;position:relative;color:var(--text-dim);">
+            <span style="position:absolute;left:0;color:var(--accent);">·</span>
+            支援平台：Web · Mobile · Desktop
+          </li>
+          <li style="font-size:clamp(12px,1.4vw,15px);padding-left:14px;position:relative;color:var(--text-dim);">
+            <span style="position:absolute;left:0;color:var(--accent);">·</span>
+            上傳檔案、圖片、文件後直接對話
+          </li>
+        </ul>
+        <div class="panel-tags" style="margin-top:14px;">
+          <span class="tag">隨時隨地</span>
+          <span class="tag">對話為主</span>
+          <span class="tag">個人 / 創作</span>
+        </div>
+      </div>
+      <div class="slide__panel slide__panel--cowork">
+        <div class="slide__panel-title">
+          <span class="dot dot--cowork"></span>
+          Claude Cowork
+        </div>
+        <p class="panel-def">「讓 AI 幫你操作電腦的自動化工具」</p>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;">
+          <li style="font-size:clamp(12px,1.4vw,15px);padding-left:14px;position:relative;color:var(--text-dim);">
+            <span style="position:absolute;left:0;color:var(--green);">·</span>
+            核心用途：檔案管理、跨應用任務自動化
+          </li>
+          <li style="font-size:clamp(12px,1.4vw,15px);padding-left:14px;position:relative;color:var(--text-dim);">
+            <span style="position:absolute;left:0;color:var(--green);">·</span>
+            支援平台：Desktop 桌面應用
+          </li>
+          <li style="font-size:clamp(12px,1.4vw,15px);padding-left:14px;position:relative;color:var(--text-dim);">
+            <span style="position:absolute;left:0;color:var(--green);">·</span>
+            可解鎖 Agent 模式，進一步自動化
+          </li>
+        </ul>
+        <div class="panel-tags" style="margin-top:14px;">
+          <span class="tag">桌面端</span>
+          <span class="tag">流程自動化</span>
+          <span class="tag">商務 / 行政</span>
+        </div>
+      </div>
+    </div>
+    <p class="slide__label reveal" style="margin-top:16px;text-align:center;">共同基礎 — 由 Anthropic Claude 模型驅動</p>
+  </section>
+
+  <!-- ===== SLIDE 3: 比較表 ===== -->
+  <section class="slide">
+    <p class="slide__label reveal">Slide 03 · 比較</p>
+    <h2 class="slide__heading reveal">Chat vs Cowork — 一表看清差異</h2>
+    <div class="slide__table-wrap reveal">
+      <table class="slide__table">
+        <thead>
+          <tr>
+            <th>比較項目</th>
+            <th><span class="badge badge--chat">Claude Chat</span></th>
+            <th><span class="badge badge--cowork">Claude Cowork</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>使用方式</td>
+            <td>對話介面輸入</td>
+            <td>桌面端操作電腦</td>
+          </tr>
+          <tr>
+            <td>主要功能</td>
+            <td>文字生成、問答、分析</td>
+            <td>檔案整理、任務自動化</td>
+          </tr>
+          <tr>
+            <td>技術門檻</td>
+            <td>無，直接對話</td>
+            <td>無，視覺化操作</td>
+          </tr>
+          <tr>
+            <td>目標族群</td>
+            <td>個人、學生、創作者</td>
+            <td>商務人士、非技術用戶</td>
+          </tr>
+          <tr>
+            <td>使用場景</td>
+            <td>隨時隨地、碎片化使用</td>
+            <td>定期、重複性工作任務</td>
+          </tr>
+          <tr>
+            <td>輸出形式</td>
+            <td>文字、程式碼、圖表</td>
+            <td>檔案、資料夾、跨應用操作</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 4: 模型介紹 ===== -->
+  <section class="slide">
+    <p class="slide__label reveal">Slide 04 · 模型</p>
+    <h2 class="slide__heading reveal">認識 Claude 模型家族</h2>
+    <div class="model-cards reveal">
+      <div class="model-card">
+        <div class="model-card__name">Haiku</div>
+        <div class="model-card__pos">輕量 · 快速</div>
+        <div class="model-stars">
+          <div class="star star--filled"></div>
+          <div class="star star--filled"></div>
+          <div class="star star--empty"></div>
+          <div class="star star--empty"></div>
+          <div class="star star--empty"></div>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:clamp(10px,1.1vw,12px);color:var(--text-dim);margin-bottom:6px;">速度</div>
+        <div class="speed-bar"><div class="speed-bar__fill" style="width:95%"></div></div>
+        <div class="model-card__desc">日常問答、快速任務的首選，Token 消耗少，回應速度最快。</div>
+      </div>
+      <div class="model-card">
+        <div class="model-card__name">Sonnet</div>
+        <div class="model-card__pos">智慧 · 均衡</div>
+        <div class="model-stars">
+          <div class="star star--filled"></div>
+          <div class="star star--filled"></div>
+          <div class="star star--filled"></div>
+          <div class="star star--empty"></div>
+          <div class="star star--empty"></div>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:clamp(10px,1.1vw,12px);color:var(--text-dim);margin-bottom:6px;">速度</div>
+        <div class="speed-bar"><div class="speed-bar__fill" style="width:70%"></div></div>
+        <div class="model-card__desc">日常使用最佳平衡點，兼顧品質與速度，Chat & Cowork 預設選擇。</div>
+      </div>
+      <div class="model-card model-card--opus">
+        <div class="model-card__name" style="color:var(--accent);">Opus</div>
+        <div class="model-card__pos">頂級 · 旗艦</div>
+        <div class="model-stars">
+          <div class="star star--filled"></div>
+          <div class="star star--filled"></div>
+          <div class="star star--filled"></div>
+          <div class="star star--filled"></div>
+          <div class="star star--filled"></div>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:clamp(10px,1.1vw,12px);color:var(--text-dim);margin-bottom:6px;">速度</div>
+        <div class="speed-bar"><div class="speed-bar__fill" style="width:40%"></div></div>
+        <div class="model-card__desc">複雜分析、深度報告的最強選擇。分析型任務請用 Opus，不要省 Token 省在刀口上。</div>
+      </div>
+    </div>
+    <p class="slide__label reveal" style="margin-top:14px;text-align:right;">目前最新版本：Claude 4 系列（Sonnet 4 · Opus 4）</p>
+  </section>
+
+  <!-- ===== SLIDE 5: 安裝 SKILL ===== -->
+  <section class="slide">
+    <p class="slide__label reveal">Slide 05 · Skill</p>
+    <h2 class="slide__heading reveal">擴充能力，從安裝 Skill 開始</h2>
+    <div class="skill-steps reveal">
+      <div class="skill-step">
+        <div class="skill-step__num">01</div>
+        <div class="skill-step__title">開啟 Cowork</div>
+        <div class="skill-step__desc">啟動 Claude Cowork 桌面應用程式</div>
+      </div>
+      <div class="skill-step">
+        <div class="skill-step__num">02</div>
+        <div class="skill-step__title">進入 Skill 設定</div>
+        <div class="skill-step__desc">前往設定頁面或 Skill 管理介面</div>
+      </div>
+      <div class="skill-step">
+        <div class="skill-step__num">03</div>
+        <div class="skill-step__title">選擇 Skill</div>
+        <div class="skill-step__desc">從清單中挑選所需的擴充功能包</div>
+      </div>
+      <div class="skill-step">
+        <div class="skill-step__num">04</div>
+        <div class="skill-step__title">一鍵安裝</div>
+        <div class="skill-step__desc">安裝完成後即可在任務中直接調用</div>
+      </div>
+    </div>
+    <p class="slide__label reveal" style="margin-top:16px;">熱門 Skill 範例</p>
+    <div class="skill-examples reveal">
+      <div class="skill-ex">
+        <span class="skill-ex__icon">📁</span>
+        <div>
+          <div style="font-weight:700;font-size:clamp(12px,1.4vw,15px);margin-bottom:4px;">檔案自動分類</div>
+          <div style="font-size:clamp(11px,1.2vw,13px);color:var(--text-dim);">依日期、類型或關鍵字整理資料夾</div>
+        </div>
+      </div>
+      <div class="skill-ex">
+        <span class="skill-ex__icon">📊</span>
+        <div>
+          <div style="font-weight:700;font-size:clamp(12px,1.4vw,15px);margin-bottom:4px;">Excel / CSV 資料處理</div>
+          <div style="font-size:clamp(11px,1.2vw,13px);color:var(--text-dim);">批次清理、分析、輸出報告</div>
+        </div>
+      </div>
+      <div class="skill-ex">
+        <span class="skill-ex__icon">🌐</span>
+        <div>
+          <div style="font-weight:700;font-size:clamp(12px,1.4vw,15px);margin-bottom:4px;">前端設計 Skill</div>
+          <div style="font-size:clamp(11px,1.2vw,13px);color:var(--text-dim);">生成視覺化 HTML 網頁報告</div>
+        </div>
+      </div>
+      <div class="skill-ex">
+        <span class="skill-ex__icon">📑</span>
+        <div>
+          <div style="font-weight:700;font-size:clamp(12px,1.4vw,15px);margin-bottom:4px;">PPTX Skill</div>
+          <div style="font-size:clamp(11px,1.2vw,13px);color:var(--text-dim);">將網頁內容轉換為投影片</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 6: 使用情境 ===== -->
+  <section class="slide">
+    <p class="slide__label reveal">Slide 06 · 情境</p>
+    <h2 class="slide__heading reveal">實際場景，看 AI 如何幫你工作</h2>
+    <div class="scenario-cards reveal">
+      <div class="scenario-card scenario-card--chat">
+        <div class="scenario-card__type">Claude Chat</div>
+        <div class="scenario-card__title">行銷企劃：快速產出社群貼文</div>
+        <ul class="scenario-steps">
+          <li>上傳品牌簡報與產品資料</li>
+          <li>請 AI 分析目標受眾與語氣</li>
+          <li>生成 3 組不同風格的貼文草稿</li>
+          <li>直接複製貼上到發文工具</li>
+        </ul>
+      </div>
+      <div class="scenario-card scenario-card--cowork">
+        <div class="scenario-card__type">Claude Cowork</div>
+        <div class="scenario-card__title">行政人員：100 份 PDF 自動分類</div>
+        <ul class="scenario-steps">
+          <li>告訴 AI「依日期分類桌面 PDF」</li>
+          <li>AI 掃描檔案名稱與內容</li>
+          <li>自動建立年份 / 月份資料夾結構</li>
+          <li>搬移完成，輸出分類報告</li>
+        </ul>
+      </div>
+    </div>
+    <div class="reveal" style="margin-top:clamp(16px,2vh,24px);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:clamp(10px,1.4vw,16px) clamp(14px,2vw,22px);">
+      <p style="font-size:clamp(13px,1.6vw,17px);font-weight:600;text-align:center;">
+        Chat 解決「<span style="color:var(--accent);">想</span>」的問題，Cowork 解決「<span style="color:var(--green);">做</span>」的問題
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== PART 2 DIVIDER ===== -->
+  <section class="slide slide--divider">
+    <div class="slide__number">02</div>
+    <p class="slide__part reveal">Part 02</p>
+    <h2 class="slide__heading reveal" style="max-width:600px;">問卷報告<br>提詞工程分析</h2>
+    <p class="slide__subtitle reveal" style="margin-top:14px;">Token 實驗的三個發現</p>
+  </section>
+
+  <!-- ===== SLIDE 7: 前言 ===== -->
+  <section class="slide">
+    <p class="slide__label reveal">Slide 07 · 前言</p>
+    <h2 class="slide__heading reveal">這次實驗的起點</h2>
+    <div class="discovery-block reveal">
+      <div class="discovery-block__tag">背景</div>
+      <div class="discovery-block__headline">KPI 會議上展示了 AI 撰寫的問卷分析報告</div>
+      <div class="discovery-block__body">會後對 AI 的操作順序產生好奇，決定深入拆解並刻意燒 Token 做了一系列對照實驗。</div>
+    </div>
+    <div class="sub-finding reveal">
+      <div class="sub-finding-item">
+        <div class="sub-finding-item__title" style="color:var(--accent);">實驗目的</div>
+        <div class="sub-finding-item__body">找出最有效率的 AI 工作流程，讓非技術人員也能快速複製這套方法。</div>
+      </div>
+      <div class="sub-finding-item">
+        <div class="sub-finding-item__title" style="color:var(--green);">實驗結論</div>
+        <div class="sub-finding-item__body">整理出三個關鍵發現，並提煉為一套可執行的三步驟建議流程。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 8: 發現一 ===== -->
+  <section class="slide">
+    <p class="slide__label reveal">Slide 08 · 發現一</p>
+    <h2 class="slide__heading reveal">Chat vs Cowork，差異沒你想的大</h2>
+    <div class="discovery-block reveal">
+      <div class="discovery-block__tag">核心結論</div>
+      <div class="discovery-block__headline">非軟體工程背景的使用者，兩者體驗差距不大</div>
+      <div class="discovery-block__body">對一般用戶而言，在 Chat 或 Cowork 上完成相同任務的方式幾乎相同——但 Cowork 有一個關鍵隱藏優勢。</div>
+    </div>
+    <div class="reveal" style="margin-top:clamp(12px,1.8vh,20px);">
+      <p class="slide__label" style="margin-bottom:10px;">Cowork 的隱藏優勢：Agent 模式</p>
+      <div class="agent-flow">
+        <div class="agent-node">使用者下達目標</div>
+        <div class="agent-connector"></div>
+        <div class="agent-node agent-node--highlight">AI 自主規劃 → 執行 → 檢查 <span class="agent-loop">循環</span></div>
+        <div class="agent-connector"></div>
+        <div class="agent-node">進一步「龍蝦化」— 持續強化、自我迭代的自動流程</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 9: 發現二 ===== -->
+  <section class="slide">
+    <p class="slide__label reveal">Slide 09 · 發現二</p>
+    <h2 class="slide__heading reveal">模型選擇至關重要</h2>
+    <p class="slide__body reveal" style="margin-top:8px;color:var(--text-dim);">在問卷分析報告任務上，Haiku 的表現明顯不及 Opus</p>
+    <div class="compare-cols reveal">
+      <div class="compare-col compare-col--haiku">
+        <div class="compare-col__header">Haiku 的輸出</div>
+        <div class="compare-col__body">
+          <div class="compare-item">結構鬆散，段落邏輯不連貫</div>
+          <div class="compare-item">洞察淺薄，停留在表面描述</div>
+          <div class="compare-item">缺乏交叉分析與數據歸因</div>
+          <div class="compare-item">無法自動歸納受訪者趨勢</div>
+        </div>
+      </div>
+      <div class="compare-col compare-col--opus">
+        <div class="compare-col__header">Opus 的輸出</div>
+        <div class="compare-col__body">
+          <div class="compare-item">邏輯嚴謹，層次分明</div>
+          <div class="compare-item">深度解讀，提供可行建議</div>
+          <div class="compare-item">主動進行交叉分析</div>
+          <div class="compare-item">自動歸納趨勢，標註異常值</div>
+        </div>
+      </div>
+    </div>
+    <div class="reveal" style="margin-top:clamp(12px,1.8vh,20px);background:var(--accent-dim);border:1px solid rgba(194,65,12,0.2);border-radius:8px;padding:clamp(10px,1.4vw,16px) clamp(14px,2vw,22px);">
+      <p style="font-size:clamp(13px,1.6vw,17px);font-weight:700;color:var(--accent);">
+        分析型任務請用 Opus — 別省 Token 省在刀口上
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 10: 發現三 ===== -->
+  <section class="slide">
+    <p class="slide__label reveal">Slide 10 · 發現三</p>
+    <h2 class="slide__heading reveal">前端 Skill → PPTX 的黃金工作流</h2>
+    <div class="compare-cols reveal" style="margin-top:clamp(12px,2vh,20px);">
+      <div class="compare-col" style="border-top:3px solid var(--text-dim);">
+        <div class="compare-col__header" style="background:var(--surface2);color:var(--text-dim);">直接生成 PPT（舊方法）</div>
+        <div class="compare-col__body">
+          <div class="compare-item" style="color:var(--text-dim);">AI 對 PPT 格式理解有限</div>
+          <div class="compare-item" style="color:var(--text-dim);">版面自由度低，樣式單調</div>
+          <div class="compare-item" style="color:var(--text-dim);">難以精確控制視覺呈現</div>
+        </div>
+      </div>
+      <div class="compare-col" style="border-top:3px solid var(--green);">
+        <div class="compare-col__header" style="background:var(--green-dim);color:var(--green);">HTML → 轉 PPT（新方法）</div>
+        <div class="compare-col__body">
+          <div class="compare-item" style="color:var(--text);">AI 對 HTML 理解遠優於 PPT</div>
+          <div class="compare-item" style="color:var(--text);">網頁版面設計自由度極高</div>
+          <div class="compare-item" style="color:var(--text);">轉換後格式穩定，可直接使用</div>
+        </div>
+      </div>
+    </div>
+    <div class="reveal" style="margin-top:clamp(12px,1.8vh,20px);display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:clamp(10px,1.4vw,16px) clamp(14px,2vw,22px);">
+      <div style="font-size:clamp(18px,2.5vw,28px);">🌐</div>
+      <div style="font-size:clamp(14px,1.6vw,18px);font-weight:700;">前端設計 Skill 生成 HTML</div>
+      <div style="font-size:clamp(16px,2vw,22px);color:var(--text-dim);padding:0 8px;">→</div>
+      <div style="font-size:clamp(18px,2.5vw,28px);">📑</div>
+      <div style="font-size:clamp(14px,1.6vw,18px);font-weight:700;">PPTX Skill 轉換投影片</div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 11: 建議流程 ===== -->
+  <section class="slide">
+    <p class="slide__label reveal">Slide 11 · 建議流程</p>
+    <h2 class="slide__heading reveal">三步驟，複製這套方法</h2>
+    <div class="flow-steps reveal">
+      <div class="flow-step">
+        <div class="flow-step__num">Step 01</div>
+        <div class="flow-step__title">共創方向</div>
+        <div class="flow-step__desc">提供原始資料給 AI，一起討論分析角度、敘事框架與報告大綱。</div>
+        <div class="flow-step__output">產出：確認大綱與方向</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step__num">Step 02</div>
+        <div class="flow-step__title">前端生成</div>
+        <div class="flow-step__desc">使用前端設計 Skill 生成視覺化網頁版報告，已可直接對外呈現。</div>
+        <div class="flow-step__output">產出：HTML 網頁 ✓ 可直接使用</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step flow-step--optional">
+        <div class="flow-step__num">Step 03 <span class="optional-badge">選配</span></div>
+        <div class="flow-step__title">轉成 PPT</div>
+        <div class="flow-step__desc">若需進一步客製化版面、套用公司模板，或正式簡報場合，再調用 PPTX Skill 轉換。</div>
+        <div class="flow-step__output">產出：可深度調整的 PPT</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 12: 結語 ===== -->
+  <section class="slide" style="background-image:radial-gradient(ellipse at 70% 30%, rgba(194,65,12,0.1) 0%, transparent 50%);">
+    <p class="slide__label reveal">Slide 12 · 結語</p>
+    <h2 class="slide__heading reveal">AI 輸出品質的公式</h2>
+    <div class="reveal" style="margin:clamp(14px,2vh,22px) 0;background:var(--surface);border:1px solid var(--border-bright);border-radius:10px;padding:clamp(14px,2vw,24px);text-align:center;">
+      <p style="font-family:var(--font-mono);font-size:clamp(14px,1.9vw,22px);font-weight:700;">
+        輸出品質 = <span style="color:var(--accent);">方向</span> × <span style="color:var(--green);">模型選擇</span> × <span style="color:var(--blue);">工具鏈</span>
+      </p>
+    </div>
+    <div class="takeaway-items reveal">
+      <div class="takeaway-item">
+        <div class="takeaway-item__num">1</div>
+        <div class="takeaway-item__text">Agent 模式讓工作流自動化成為可能，Cowork 的隱藏優勢值得探索</div>
+      </div>
+      <div class="takeaway-item">
+        <div class="takeaway-item__num">2</div>
+        <div class="takeaway-item__text">複雜分析任務，Opus 才是正解 — 選對模型事半功倍</div>
+      </div>
+      <div class="takeaway-item">
+        <div class="takeaway-item__num">3</div>
+        <div class="takeaway-item__text">個人建議：HTML → PPT 是值得嘗試的報告生成路徑</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 13: 謝謝觀看 ===== -->
+  <section class="slide slide--title" style="background-image:radial-gradient(ellipse at 60% 40%, rgba(194,65,12,0.13) 0%, transparent 55%), radial-gradient(ellipse at 20% 70%, rgba(10,92,59,0.08) 0%, transparent 50%); align-items:flex-start; justify-content:center;">
+    <div class="accent-bar reveal"></div>
+    <p class="slide__label reveal">Thank You</p>
+    <h1 class="slide__display reveal" style="font-size:clamp(52px,11vw,130px);">謝謝<br>觀看</h1>
+    <div class="reveal" style="margin-top:clamp(24px,4vh,48px); display:flex; flex-direction:column; gap:8px;">
+      <p class="slide__subtitle">報告人</p>
+      <p style="font-family:var(--font-mono); font-size:clamp(16px,2.2vw,26px); font-weight:700; color:var(--accent);">ACD_RD8 陳冠宇</p>
+    </div>
+    <div class="reveal" style="margin-top:clamp(32px,5vh,60px); width:60px; height:1px; background:var(--border-bright);"></div>
+    <p class="slide__label reveal" style="margin-top:16px;">如有任何問題，歡迎討論</p>
+  </section>
+
+</div><!-- /deck -->
+
+<script>
+  function SlideEngine() {
+    this.deck = document.querySelector('.deck');
+    this.slides = [].slice.call(document.querySelectorAll('.slide'));
+    this.current = 0;
+    this.total = this.slides.length;
+    this.buildChrome();
+    this.bindEvents();
+    this.observe();
+    this.update();
+  }
+
+  SlideEngine.prototype.buildChrome = function() {
+    var bar = document.createElement('div');
+    bar.className = 'deck-progress';
+    document.body.appendChild(bar);
+    this.bar = bar;
+
+    var dots = document.createElement('div');
+    dots.className = 'deck-dots';
+    var self = this;
+    this.slides.forEach(function(_, i) {
+      var d = document.createElement('button');
+      d.className = 'deck-dot';
+      d.title = 'Slide ' + (i + 1);
+      d.onclick = function() { self.goTo(i); };
+      dots.appendChild(d);
+    });
+    document.body.appendChild(dots);
+    this.dots = [].slice.call(dots.children);
+
+    var ctr = document.createElement('div');
+    ctr.className = 'deck-counter';
+    document.body.appendChild(ctr);
+    this.counter = ctr;
+
+    var hints = document.createElement('div');
+    hints.className = 'deck-hints';
+    hints.textContent = '← → 或滑動切換投影片';
+    document.body.appendChild(hints);
+    this.hints = hints;
+    this.hintTimer = setTimeout(function() { hints.classList.add('faded'); }, 4000);
+  };
+
+  SlideEngine.prototype.bindEvents = function() {
+    var self = this;
+    document.addEventListener('keydown', function(e) {
+      if (['ArrowDown', 'ArrowRight', ' ', 'PageDown'].indexOf(e.key) > -1) {
+        e.preventDefault(); self.next();
+      } else if (['ArrowUp', 'ArrowLeft', 'PageUp'].indexOf(e.key) > -1) {
+        e.preventDefault(); self.prev();
+      } else if (e.key === 'Home') { e.preventDefault(); self.goTo(0); }
+      else if (e.key === 'End') { e.preventDefault(); self.goTo(self.total - 1); }
+      self.fadeHints();
+    });
+    var tY;
+    this.deck.addEventListener('touchstart', function(e) { tY = e.touches[0].clientY; }, { passive: true });
+    this.deck.addEventListener('touchend', function(e) {
+      var dy = tY - e.changedTouches[0].clientY;
+      if (Math.abs(dy) > 50) { dy > 0 ? self.next() : self.prev(); }
+    });
+  };
+
+  SlideEngine.prototype.observe = function() {
+    var self = this;
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          self.current = self.slides.indexOf(entry.target);
+          self.update();
+        }
+      });
+    }, { threshold: 0.5 });
+    this.slides.forEach(function(s) { obs.observe(s); });
+  };
+
+  SlideEngine.prototype.goTo = function(i) {
+    this.slides[Math.max(0, Math.min(i, this.total - 1))].scrollIntoView({ behavior: 'smooth' });
+  };
+  SlideEngine.prototype.next = function() { if (this.current < this.total - 1) this.goTo(this.current + 1); };
+  SlideEngine.prototype.prev = function() { if (this.current > 0) this.goTo(this.current - 1); };
+  SlideEngine.prototype.update = function() {
+    this.bar.style.width = ((this.current + 1) / this.total * 100) + '%';
+    var c = this.current;
+    this.dots.forEach(function(d, i) { d.classList.toggle('active', i === c); });
+    this.counter.textContent = (this.current + 1) + ' / ' + this.total;
+  };
+  SlideEngine.prototype.fadeHints = function() {
+    clearTimeout(this.hintTimer);
+    this.hints.classList.add('faded');
+  };
+
+  new SlideEngine();
+</script>
+</body>
+</html>
