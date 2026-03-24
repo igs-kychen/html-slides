@@ -988,10 +988,25 @@
           </tr>
         </thead>
         <tbody>
+          <tr style="background:color-mix(in srgb, var(--surface) 60%, var(--accent-dim) 40%);">
+            <td style="color:var(--accent);">上下文範圍</td>
+            <td>帳號長期記憶<br>+ 同一個對話</td>
+            <td>帳號長期記憶<br>+ <strong style="color:var(--green);">資料夾設定</strong></td>
+          </tr>
           <tr>
-            <td>使用方式</td>
+            <td>執行環境</td>
+            <td>雲端（Web / Mobile / Desktop）</td>
+            <td><strong style="color:var(--green);">本機電腦</strong>上執行</td>
+          </tr>
+          <tr>
+            <td>操作方式</td>
             <td>對話介面輸入</td>
-            <td>桌面端操作電腦</td>
+            <td>對話 · 手機遠端指示 · 排程</td>
+          </tr>
+          <tr>
+            <td>自動化能力</td>
+            <td>基本任務</td>
+            <td><strong style="color:var(--green);">可操控電腦（龍蝦模式）</strong></td>
           </tr>
           <tr>
             <td>主要功能</td>
@@ -1000,23 +1015,13 @@
           </tr>
           <tr>
             <td>技術門檻</td>
-            <td>無，直接對話</td>
-            <td>無，視覺化操作</td>
+            <td>無</td>
+            <td>無</td>
           </tr>
           <tr>
             <td>目標族群</td>
             <td>個人、學生、創作者</td>
             <td>商務人士、非技術用戶</td>
-          </tr>
-          <tr>
-            <td>使用場景</td>
-            <td>隨時隨地、碎片化使用</td>
-            <td>定期、重複性工作任務</td>
-          </tr>
-          <tr>
-            <td>輸出形式</td>
-            <td>文字、程式碼、圖表</td>
-            <td>檔案、資料夾、跨應用操作</td>
           </tr>
         </tbody>
       </table>
@@ -1078,58 +1083,74 @@
   <section class="slide">
     <p class="slide__label reveal">Slide 05 · Skill</p>
     <h2 class="slide__heading reveal">擴充能力，從安裝 Skill 開始</h2>
-    <div class="skill-steps reveal">
-      <div class="skill-step">
-        <div class="skill-step__num">01</div>
-        <div class="skill-step__title">開啟 Cowork</div>
-        <div class="skill-step__desc">啟動 Claude Cowork 桌面應用程式</div>
+
+    <div class="slide__panels reveal" style="margin-top:clamp(12px,2vh,20px);">
+      <div class="slide__panel slide__panel--chat">
+        <div class="slide__panel-title">
+          <span class="dot" style="background:var(--accent);"></span>
+          方式一｜URL 安裝（推薦）
+        </div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:7px;">
+          <li style="font-size:clamp(12px,1.4vw,15px);padding-left:14px;position:relative;color:var(--text-dim);">
+            <span style="position:absolute;left:0;color:var(--accent);">·</span>
+            把 GitHub 或套件網址直接貼給 AI
+          </li>
+          <li style="font-size:clamp(12px,1.4vw,15px);padding-left:14px;position:relative;color:var(--text-dim);">
+            <span style="position:absolute;left:0;color:var(--accent);">·</span>
+            AI 自動讀取、解析並完成安裝
+          </li>
+          <li style="font-size:clamp(12px,1.4vw,15px);padding-left:14px;position:relative;color:var(--text-dim);">
+            <span style="position:absolute;left:0;color:var(--accent);">·</span>
+            注意：安裝過程會消耗 Token
+          </li>
+        </ul>
       </div>
-      <div class="skill-step">
-        <div class="skill-step__num">02</div>
-        <div class="skill-step__title">進入 Skill 設定</div>
-        <div class="skill-step__desc">前往設定頁面或 Skill 管理介面</div>
-      </div>
-      <div class="skill-step">
-        <div class="skill-step__num">03</div>
-        <div class="skill-step__title">選擇 Skill</div>
-        <div class="skill-step__desc">從清單中挑選所需的擴充功能包</div>
-      </div>
-      <div class="skill-step">
-        <div class="skill-step__num">04</div>
-        <div class="skill-step__title">一鍵安裝</div>
-        <div class="skill-step__desc">安裝完成後即可在任務中直接調用</div>
+      <div class="slide__panel slide__panel--cowork">
+        <div class="slide__panel-title">
+          <span class="dot" style="background:var(--green);"></span>
+          方式二｜手動上傳
+        </div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:7px;">
+          <li style="font-size:clamp(12px,1.4vw,15px);padding-left:14px;position:relative;color:var(--text-dim);">
+            <span style="position:absolute;left:0;color:var(--green);">·</span>
+            進入 Cowork 設定頁面手動上傳
+          </li>
+          <li style="font-size:clamp(12px,1.4vw,15px);padding-left:14px;position:relative;color:var(--text-dim);">
+            <span style="position:absolute;left:0;color:var(--green);">·</span>
+            適合本地自製 Skill 或私有套件
+          </li>
+          <li style="font-size:clamp(12px,1.4vw,15px);padding-left:14px;position:relative;color:var(--text-dim);">
+            <span style="position:absolute;left:0;color:var(--green);">·</span>
+            不消耗 Token
+          </li>
+        </ul>
       </div>
     </div>
-    <p class="slide__label reveal" style="margin-top:16px;">熱門 Skill 範例</p>
-    <div class="skill-examples reveal">
-      <div class="skill-ex">
-        <span class="skill-ex__icon">📁</span>
-        <div>
-          <div style="font-weight:700;font-size:clamp(12px,1.4vw,15px);margin-bottom:4px;">檔案自動分類</div>
-          <div style="font-size:clamp(11px,1.2vw,13px);color:var(--text-dim);">依日期、類型或關鍵字整理資料夾</div>
-        </div>
+
+    <p class="slide__label reveal" style="margin-top:clamp(12px,1.8vh,20px);">實際範例</p>
+    <div class="reveal" style="display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(8px,1.2vw,14px);">
+      <div style="background:var(--surface);border:1px solid var(--border-bright);border-radius:10px;padding:clamp(10px,1.4vw,16px);display:flex;flex-direction:column;gap:6px;">
+        <div style="font-family:var(--font-mono);font-size:clamp(9px,1vw,11px);color:var(--accent);text-transform:uppercase;letter-spacing:1px;font-weight:600;">本份簡報使用</div>
+        <div style="font-weight:700;font-size:clamp(13px,1.5vw,16px);">visual-explainer</div>
+        <div style="font-size:clamp(11px,1.2vw,13px);color:var(--text-dim);line-height:1.4;flex:1;">生成美觀的 HTML 視覺化網頁報告</div>
+        <a href="https://github.com/nicobailon/visual-explainer" target="_blank" style="font-family:var(--font-mono);font-size:clamp(9px,1vw,11px);color:var(--accent);text-decoration:none;background:var(--accent-dim);padding:4px 8px;border-radius:4px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">github.com/nicobailon/visual-explainer ↗</a>
       </div>
-      <div class="skill-ex">
-        <span class="skill-ex__icon">📊</span>
-        <div>
-          <div style="font-weight:700;font-size:clamp(12px,1.4vw,15px);margin-bottom:4px;">Excel / CSV 資料處理</div>
-          <div style="font-size:clamp(11px,1.2vw,13px);color:var(--text-dim);">批次清理、分析、輸出報告</div>
-        </div>
+      <div style="background:var(--surface);border:1px solid var(--border-bright);border-radius:10px;padding:clamp(10px,1.4vw,16px);display:flex;flex-direction:column;gap:6px;">
+        <div style="font-family:var(--font-mono);font-size:clamp(9px,1vw,11px);color:var(--green);text-transform:uppercase;letter-spacing:1px;font-weight:600;">找 Skill 的 Skill</div>
+        <div style="font-weight:700;font-size:clamp(13px,1.5vw,16px);">find-skills</div>
+        <div style="font-size:clamp(11px,1.2vw,13px);color:var(--text-dim);line-height:1.4;flex:1;">幫你搜尋、推薦適合任務的 Skill</div>
+        <a href="https://github.com/vercel-labs/skills/tree/main/skills/find-skills" target="_blank" style="font-family:var(--font-mono);font-size:clamp(9px,1vw,11px);color:var(--green);text-decoration:none;background:var(--green-dim);padding:4px 8px;border-radius:4px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">github.com/.../find-skills ↗</a>
       </div>
-      <div class="skill-ex">
-        <span class="skill-ex__icon">🌐</span>
-        <div>
-          <div style="font-weight:700;font-size:clamp(12px,1.4vw,15px);margin-bottom:4px;">前端設計 Skill</div>
-          <div style="font-size:clamp(11px,1.2vw,13px);color:var(--text-dim);">生成視覺化 HTML 網頁報告</div>
-        </div>
+      <div style="background:var(--surface);border:1px solid var(--border-bright);border-radius:10px;padding:clamp(10px,1.4vw,16px);display:flex;flex-direction:column;gap:6px;">
+        <div style="font-family:var(--font-mono);font-size:clamp(9px,1vw,11px);color:var(--blue);text-transform:uppercase;letter-spacing:1px;font-weight:600;">寫 Skill 的 Skill</div>
+        <div style="font-weight:700;font-size:clamp(13px,1.5vw,16px);">skill-creator</div>
+        <div style="font-size:clamp(11px,1.2vw,13px);color:var(--text-dim);line-height:1.4;flex:1;">引導你從頭建立自己的 Skill</div>
+        <a href="https://github.com/anthropics/skills/tree/main/skills/skill-creator" target="_blank" style="font-family:var(--font-mono);font-size:clamp(9px,1vw,11px);color:var(--blue);text-decoration:none;background:var(--blue-dim);padding:4px 8px;border-radius:4px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">github.com/.../skill-creator ↗</a>
       </div>
-      <div class="skill-ex">
-        <span class="skill-ex__icon">📑</span>
-        <div>
-          <div style="font-weight:700;font-size:clamp(12px,1.4vw,15px);margin-bottom:4px;">PPTX Skill</div>
-          <div style="font-size:clamp(11px,1.2vw,13px);color:var(--text-dim);">將網頁內容轉換為投影片</div>
-        </div>
-      </div>
+    </div>
+    <div class="reveal" style="margin-top:clamp(10px,1.4vh,16px);text-align:right;">
+      <span style="font-size:clamp(12px,1.5vw,16px);color:var(--text-dim);">現在就動手試試看吧</span>
+      <span style="color:var(--accent);font-weight:700;font-size:clamp(14px,1.7vw,18px);margin-left:8px;">→</span>
     </div>
   </section>
 
